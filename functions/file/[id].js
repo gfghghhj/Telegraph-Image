@@ -1,111 +1,155 @@
-export async function onRequest(context) {  // Contents of context object  
-    const {   
-        request, // same as existing Worker API    
-    env, // same as existing Worker API    
-    params, // if filename includes [id] or [[path]]   
-     waitUntil, // same as ctx.waitUntil in existing Worker API    
-     next, // used for middleware or to fetch assets    
-     data, // arbitrary space for passing data between middlewares 
-     } = context;
-     context.request
-     const url = new URL(request.url);
-    
-    const response = fetch('https://telegra.ph/' + url.pathname + url.search, {
-         method: request.method,
-         headers: request.headers,
-         body: request.body,
-     }).then(async (response) => {
-        console.log(response.ok); // true if the response status is 2xx
-        console.log(response.status); // 200
-        if(response.ok){
-            // Referer header equal to the admin page
-            console.log(url.origin+"/admin")
-            if (request.headers.get('Referer') == url.origin+"/admin") {
-                //show the image
-                return response;
-            }
+export async function onRequest(context) {
+    const {
+        request,
+        env,
+        params,
+    } = context;
 
-        if (typeof env.img_url == "undefined" || env.img_url == null || env.img_url == ""){}else{
-            //check the record from kv
-            const record = await env.img_url.getWithMetadata(params.id); 
-            console.log("record")
-            console.log(record)
-            if (record.metadata === null) {
+    const url = new URL(request.url);
+    let fileUrl = 'https://telegra.ph/' + url.pathname + url.search
+    if (url.pathname.length > 39) { // Path length > 39 indicates file uploaded via Telegram Bot API
+        const formdata = new FormData();
+        formdata.append("file_id", url.pathname);
 
-            }else{
-                
-                //if the record is not null, redirect to the image
-                if (record.metadata.ListType=="White"){
-                    return response;
-                }else if (record.metadata.ListType=="Block"){
-                    console.log("Referer")
-                    console.log(request.headers.get('Referer'))
-                    if(typeof request.headers.get('Referer') == "undefined" ||request.headers.get('Referer') == null || request.headers.get('Referer') == ""){
-                        return Response.redirect(url.origin+"/block-img.html", 302)
-                    }else{
-                        return Response.redirect("https://static-res.pages.dev/teleimage/img-block-compressed.png", 302)
-                    }
+        const requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow"
+        };
+        // /file/AgACAgEAAxkDAAMDZt1Gzs4W8dQPWiQJxO5YSH5X-gsAAt-sMRuWNelGOSaEM_9lHHgBAAMCAANtAAM2BA.png
+        //get the AgACAgEAAxkDAAMDZt1Gzs4W8dQPWiQJxO5YSH5X-gsAAt-sMRuWNelGOSaEM_9lHHgBAAMCAANtAAM2BA
+        console.log(url.pathname.split(".")[0].split("/")[2])
+        const filePath = await getFilePath(env, url.pathname.split(".")[0].split("/")[2]);
+        console.log(filePath)
+        fileUrl = `https://api.telegram.org/file/bot${env.TG_Bot_Token}/${filePath}`;
+    }
 
-                }else if (record.metadata.Label=="adult"){
-                    if(typeof request.headers.get('Referer') == "undefined" ||request.headers.get('Referer') == null || request.headers.get('Referer') == ""){
-                        return Response.redirect(url.origin+"/block-img.html", 302)
-                    }else{
-                        return Response.redirect("https://static-res.pages.dev/teleimage/img-block-compressed.png", 302)
-                    }
-                }
-                //check if the env variables WhiteList_Mode are set
-                console.log("env.WhiteList_Mode:",env.WhiteList_Mode)
-                if (env.WhiteList_Mode=="true"){
-                    //if the env variables WhiteList_Mode are set, redirect to the image
-                    return Response.redirect(url.origin+"/whitelist-on.html", 302);
-                }else{
-                    //if the env variables WhiteList_Mode are not set, redirect to the image
-                    return response;
-                }
-            }
-            
-        }
+    const response = await fetch(fileUrl, {
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+    });
 
-        //get time
-        let time = new Date().getTime();
-        
-        let apikey=env.ModerateContentApiKey
-        
-            if(typeof apikey == "undefined" || apikey == null || apikey == ""){
-                
-                if (typeof env.img_url == "undefined" || env.img_url == null || env.img_url == ""){
-                    console.log("Not enbaled KV")
-                    
-                }else{
-                    //add image to kv
-                    await env.img_url.put(params.id, "",{
-                        metadata: { ListType: "None", Label: "None",TimeStamp: time },
-                    });
-                    
-                }
-            }else{
-                await fetch(`https://api.moderatecontent.com/moderate/?key=`+apikey+`&url=https://telegra.ph/` + url.pathname + url.search).
-                then(async (response) => {
-                    let moderate_data = await response.json();
-                    console.log(moderate_data)
-                    console.log("---env.img_url---")
-                    console.log(env.img_url=="true")
-                    if (typeof env.img_url == "undefined" || env.img_url == null || env.img_url == ""){}else{
-                        //add image to kv
-                        await env.img_url.put(params.id, "",{
-                            metadata: { ListType: "None", Label: moderate_data.rating_label,TimeStamp: time },
-                        });
-                    }  
-                    if (moderate_data.rating_label=="adult"){
-                        return Response.redirect(url.origin+"/block-img.html", 302)
-                    }});
-             
-            }
-        }
+    // If the response is OK, proceed with further checks
+    if (!response.ok) return response;
+
+    // Log response details
+    console.log(response.ok, response.status);
+
+    // Allow the admin page to directly view the image
+    const isAdmin = request.headers.get('Referer')?.includes(`${url.origin}/admin`);
+    if (isAdmin) {
         return response;
-     });
+    }
 
+    // Check if KV storage is available
+    if (!env.img_url) {
+        console.log("KV storage not available, returning image directly");
+        return response;  // Directly return image response, terminate execution
+    }
+
+    // The following code executes only if KV is available
+    let record = await env.img_url.getWithMetadata(params.id);
+    if (!record || !record.metadata) {
+        // Initialize metadata if it doesn't exist
+        console.log("Metadata not found, initializing...");
+        record = {
+            metadata: {
+                ListType: "None",
+                Label: "None",
+                TimeStamp: Date.now(),
+                liked: false,
+                fileName: params.id,
+                fileSize: 0,
+            }
+        };
+        await env.img_url.put(params.id, "", { metadata: record.metadata });
+    }
+
+    const metadata = {
+        ListType: record.metadata.ListType || "None",
+        Label: record.metadata.Label || "None",
+        TimeStamp: record.metadata.TimeStamp || Date.now(),
+        liked: record.metadata.liked !== undefined ? record.metadata.liked : false,
+        fileName: record.metadata.fileName || params.id,
+        fileSize: record.metadata.fileSize || 0,
+    };
+
+    // Handle based on ListType and Label
+    if (metadata.ListType === "White") {
+        return response;
+    } else if (metadata.ListType === "Block" || metadata.Label === "adult") {
+        const referer = request.headers.get('Referer');
+        const redirectUrl = referer ? "https://static-res.pages.dev/teleimage/img-block-compressed.png" : `${url.origin}/block-img.html`;
+        return Response.redirect(redirectUrl, 302);
+    }
+
+    // Check if WhiteList_Mode is enabled
+    if (env.WhiteList_Mode === "true") {
+        return Response.redirect(`${url.origin}/whitelist-on.html`, 302);
+    }
+
+    // If no metadata or further actions required, moderate content and add to KV if needed
+    if (env.ModerateContentApiKey) {
+        try {
+            console.log("Starting content moderation...");
+            const moderateUrl = `https://api.moderatecontent.com/moderate/?key=${env.ModerateContentApiKey}&url=https://telegra.ph${url.pathname}${url.search}`;
+            const moderateResponse = await fetch(moderateUrl);
+
+            if (!moderateResponse.ok) {
+                console.error("Content moderation API request failed: " + moderateResponse.status);
+            } else {
+                const moderateData = await moderateResponse.json();
+                console.log("Content moderation results:", moderateData);
+
+                if (moderateData && moderateData.rating_label) {
+                    metadata.Label = moderateData.rating_label;
+
+                    if (moderateData.rating_label === "adult") {
+                        console.log("Content marked as adult, saving metadata and redirecting");
+                        await env.img_url.put(params.id, "", { metadata });
+                        return Response.redirect(`${url.origin}/block-img.html`, 302);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error during content moderation: " + error.message);
+            // Moderation failure should not affect user experience, continue processing
+        }
+    }
+
+    // Only save metadata if content is not adult content
+    // Adult content cases are already handled above and will not reach this point
+    console.log("Saving metadata");
+    await env.img_url.put(params.id, "", { metadata });
+
+    // Return file content
     return response;
-    
-  }
-  
+}
+
+async function getFilePath(env, file_id) {
+    try {
+        const url = `https://api.telegram.org/bot${env.TG_Bot_Token}/getFile?file_id=${file_id}`;
+        const res = await fetch(url, {
+            method: 'GET',
+        });
+
+        if (!res.ok) {
+            console.error(`HTTP error! status: ${res.status}`);
+            return null;
+        }
+
+        const responseData = await res.json();
+        const { ok, result } = responseData;
+
+        if (ok && result) {
+            return result.file_path;
+        } else {
+            console.error('Error in response data:', responseData);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching file path:', error.message);
+        return null;
+    }
+}
