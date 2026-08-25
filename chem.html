@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4eedf">
+  <title>合成大强酸 · 离线版</title>
+  <style>
+    :root{--ink:#17343b;--paper:#f4eedf;--cream:#fffaf0;--orange:#e95f35;--green:#0f6155}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%}
+    body{color:var(--ink);font-family:ui-rounded,"PingFang SC","Microsoft YaHei",sans-serif;background:radial-gradient(circle at 12% 15%,rgba(233,95,53,.08),transparent 26%),radial-gradient(circle at 90% 72%,rgba(15,97,85,.07),transparent 25%),linear-gradient(rgba(23,52,59,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(23,52,59,.035) 1px,transparent 1px),var(--paper);background-size:auto,auto,28px 28px,28px 28px,auto}
+    button{font:inherit;color:inherit;cursor:pointer}.shell{min-height:100vh;padding:18px clamp(12px,3vw,40px) 22px}
+    header{max-width:1020px;margin:0 auto 14px;display:flex;align-items:center;gap:12px}.mark{width:44px;height:44px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:50% 44% 52% 45%;background:#ef7950;color:#fff;font:800 17px serif;box-shadow:3px 3px 0 var(--ink);transform:rotate(-5deg)}
+    h1{margin:0;font:800 clamp(27px,4vw,42px)/1 "Songti SC","Iowan Old Style",serif;letter-spacing:-.04em}.eyebrow,.label{margin:0 0 4px;font-size:9px;font-weight:900;letter-spacing:.15em}.offline{padding:5px 9px;border:1px solid var(--green);border-radius:99px;background:rgba(131,203,187,.25);font-size:9px;font-weight:900}
+    .head-actions{margin-left:auto;display:flex;gap:6px}.pill{padding:7px 12px;border:1.5px solid var(--ink);border-radius:99px;background:rgba(255,250,240,.55);font-size:11px;font-weight:850}
+    .layout{max-width:930px;margin:auto;display:grid;grid-template-columns:160px minmax(340px,450px) 190px;justify-content:center;align-items:start;gap:22px}.card{padding:15px;border:1.5px solid var(--ink);border-radius:8px 12px 9px 11px;background:rgba(255,250,240,.85);box-shadow:5px 6px 0 rgba(23,52,59,.12)}
+    .stats{margin-top:54px;transform:rotate(-.6deg)}.score{display:block;color:var(--orange);font:800 38px/1 "Iowan Old Style",serif}.row{display:flex;justify-content:space-between;margin-top:9px;font-size:10px}.dash{height:1px;margin:14px 0;background:repeating-linear-gradient(90deg,var(--ink) 0 4px,transparent 4px 8px);opacity:.35}.goal{display:flex;justify-content:space-between;align-items:baseline}.goal b{font:800 21px serif}.goal span{font-size:9px}
+    .progress{display:flex;gap:4px;margin-top:10px}.progress i{width:8px;height:8px;border:1px solid var(--ink);border-radius:50%}.progress i.on{background:var(--orange)}.primary{width:100%;margin-top:15px;padding:10px;border:1.5px solid var(--ink);border-radius:6px;background:var(--orange);color:#fff;font-size:11px;font-weight:900;box-shadow:3px 3px 0 var(--ink)}
+    .board{position:relative;overflow:hidden;border-radius:10px 10px 26px 26px;background:rgba(255,250,240,.68);box-shadow:7px 8px 0 rgba(23,52,59,.12)}canvas{display:block;width:100%;height:auto;aspect-ratio:440/570;touch-action:none;user-select:none}.overlay{position:absolute;z-index:4;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;background:rgba(244,238,223,.88);backdrop-filter:blur(3px)}.overlay.show{display:flex}.overlay h2{margin:8px 0;font:800 35px/1.08 "Songti SC",serif}.overlay p{max-width:270px;margin:0;font-size:11px;line-height:1.6}.overlay .primary{width:auto;min-width:125px;padding-inline:22px}.kicker{color:var(--orange);font-size:8px;font-weight:900;letter-spacing:.18em}
+    .controls{display:flex;align-items:center;gap:8px;margin-top:10px;padding:7px 9px;border:1px solid rgba(23,52,59,.22);border-radius:8px;background:rgba(255,250,240,.5)}.current{display:flex;align-items:center;gap:5px;font-size:9px}.current i{width:16px;height:16px;border:1px solid var(--ink);border-radius:50%}.current b{font:800 12px serif}.hint{margin-left:auto;font-size:8px;opacity:.65}.mobile{display:none;margin-left:auto;gap:4px}.mobile button{min-width:37px;height:31px;border:1px solid var(--ink);border-radius:6px;background:var(--cream);font-weight:900}.mobile .drop{min-width:58px;background:var(--orange);color:#fff}.status{min-height:16px;margin:6px 0 0;text-align:center;font-size:9px;opacity:.68}
+    .side{margin-top:22px;padding:14px;transform:rotate(.4deg)}.next{text-align:center}.next-ball{position:relative;width:76px;height:76px;margin:8px auto 13px;display:grid;place-content:center;text-align:center;border:2px solid var(--ink);border-radius:50% 47% 53% 45%;box-shadow:inset -7px -8px 0 rgba(23,52,59,.08),3px 4px 0 var(--ink)}.next-ball b{font:800 12px serif}.next-ball span{margin-top:3px;font-size:8px;font-weight:800}.next-ball em{position:absolute;right:-8px;top:-7px;padding:2px 4px;border:1px solid var(--orange);border-radius:7px;background:var(--cream);color:var(--orange);font-size:7px;font-style:normal;font-weight:900}
+    .ladder-title{display:flex;justify-content:space-between;padding-top:10px;border-top:1px dashed rgba(23,52,59,.3);font-size:8px}.ladder{margin:5px 0 0;padding:0;list-style:none}.ladder li{display:grid;grid-template-columns:18px 1fr auto;align-items:center;gap:5px;min-height:27px;opacity:.4}.ladder li.on{opacity:1}.ladder i{width:17px;height:17px;display:grid;place-items:center;border:1px solid var(--ink);border-radius:50%;font-size:7px;font-style:normal;font-weight:900}.ladder span{display:flex;justify-content:space-between;align-items:baseline}.ladder b{font:800 9px serif}.ladder small{font-size:7px}.ladder em{color:var(--orange);font-size:8px;font-style:normal}.unstable{margin-top:8px;font-size:7px;line-height:1.5}
+    footer{max-width:900px;margin:11px auto 0;text-align:center;font-size:8px;opacity:.55}
+    dialog{width:min(720px,calc(100% - 24px));max-height:calc(100vh - 30px);padding:25px;border:2px solid var(--ink);border-radius:13px;background:var(--paper);color:var(--ink);box-shadow:9px 10px 0 rgba(23,52,59,.25)}dialog::backdrop{background:rgba(23,52,59,.58);backdrop-filter:blur(4px)}dialog h2{margin:0 0 12px;font:800 28px "Songti SC",serif}.close{float:right;width:32px;height:32px;border:1px solid var(--ink);border-radius:50%;background:var(--cream)}.manual{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;margin:15px 0 0;padding:0;list-style:none}.manual li{display:grid;grid-template-columns:24px 75px 65px 1fr;align-items:center;gap:5px;min-height:39px;border-bottom:1px dotted rgba(23,52,59,.24);font-size:8px}.manual li>i{width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--ink);border-radius:50%;font-style:normal;font-weight:900}.manual b{font:800 11px serif}.manual em{color:var(--orange);font-style:normal;font-weight:900}.note{font-size:9px;line-height:1.6;opacity:.7}
+    @media(max-width:820px){.layout{grid-template-columns:minmax(330px,450px) 175px}.stats{grid-column:1/-1;margin:0;display:grid;grid-template-columns:auto auto 1fr auto;align-items:center;gap:12px;transform:none}.stats .score{font-size:28px}.stats .dash,.stats .goal{display:none}.stats .primary{width:auto;margin:0}.side{margin-top:20px}}
+    @media(max-width:620px){.shell{padding:12px 10px 18px}.mark{width:38px;height:38px}h1{font-size:25px}.offline{display:none}.head-actions .pill:first-child{display:none}.layout{grid-template-columns:1fr;gap:10px}.stats{grid-column:auto;grid-template-columns:auto 1fr auto}.stats .row,.stats .progress{display:none}.mainboard{order:1}.side{order:2;margin:0;display:grid;grid-template-columns:80px 1fr;gap:10px;transform:none}.side .label{text-align:center}.next-ball{width:60px;height:60px}.ladder-title{border:0;padding:0}.ladder{display:flex;gap:4px;overflow:auto;padding-bottom:5px}.ladder li{display:flex;flex:0 0 38px;flex-direction:column;gap:2px}.ladder li span{display:block;text-align:center}.ladder small{display:none}.unstable{grid-column:1/-1;text-align:center;margin:0}.hint{display:none}.mobile{display:flex}.manual{grid-template-columns:1fr}.overlay h2{font-size:29px}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="mark">H⁺</div>
+      <div><p class="eyebrow">THE PROTON PROJECT · 质子实验室</p><h1>合成大强酸</h1></div>
+      <span class="offline">✓ 单文件离线版</span>
+      <div class="head-actions"><button class="pill" id="pauseBtn">暂停</button><button class="pill" id="helpBtn">玩法与酸表</button></div>
+    </header>
+    <main class="layout">
+      <aside class="card stats">
+        <div><p class="label">实验记录</p><strong class="score" id="score">0000</strong></div>
+        <div class="row"><span>最高记录</span><b id="best">0000</b></div>
+        <div class="dash"></div>
+        <div class="goal"><b>HClO₄</b><span>本轮目标 · 高氯酸</span></div>
+        <div class="progress" id="progress"></div>
+        <button class="primary" id="restartBtn">开始实验</button>
+      </aside>
+      <section class="mainboard">
+        <div class="board">
+          <canvas id="game" width="440" height="570" tabindex="0" aria-label="酸分子合成容器"></canvas>
+          <div class="overlay show" id="overlay">
+            <span class="kicker" id="overlayKicker">完全离线 · 无需安装</span>
+            <h2 id="overlayTitle">从苯酚开始<br>合成到高氯酸</h2>
+            <p id="overlayText">相同酸分子碰撞后，会合成为酸性更强的下一级。</p>
+            <button class="primary" id="overlayBtn">开始实验</button>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="current"><span>当前</span><i id="currentDot"></i><b id="currentFormula">C₆H₅OH</b></div>
+          <span class="hint">鼠标移动 + 点击 · A / D + 空格</span>
+          <div class="mobile"><button id="leftBtn" aria-label="向左">←</button><button class="drop" id="dropBtn">投放</button><button id="rightBtn" aria-label="向右">→</button></div>
+        </div>
+        <p class="status" id="status" aria-live="polite">点击开始实验</p>
+      </section>
+      <aside class="card side">
+        <div class="next"><p class="label">下一个</p><div class="next-ball" id="nextBall"><b id="nextFormula"></b><span id="nextName"></span><em id="nextTimer">90s</em></div></div>
+        <div><div class="ladder-title"><span>弱</span><b>酸性序列</b><span>强</span></div><ol class="ladder" id="ladder"></ol></div>
+        <div class="unstable">⏱ 碳酸与亚硝酸生成 90 秒后分解；暂停时倒计时冻结。</div>
+      </aside>
+    </main>
+    <footer>本文件可直接复制到任何电脑并双击运行。化学数据仅用于酸性顺序示意，请勿在现实中混合或接触酸。</footer>
+  </div>
+  <dialog id="help">
+    <button class="close" id="closeHelp" aria-label="关闭">×</button>
+    <p class="eyebrow">LAB MANUAL · 离线实验手册</p>
+    <h2>投放、碰撞、逐级变强</h2>
+    <p class="note">移动落点后点击投放；两个相同的酸接触会合成下一级。分子持续越过警戒线 2 秒即结束。pKa 越小，酸性越强。</p>
+    <ol class="manual" id="manual"></ol>
+    <p class="note">* 碳酸使用 CO₂(aq)/H₂CO₃ 体系常见表观第一 pKa；强酸数值为常见近似值，会随介质和定义改变。</p>
+  </dialog>
+  <script>
+  (function(){
+    "use strict";
+    var W=440,H=570,L=10,R=430,FLOOR=560,WALL_TOP=94,DANGER=112,DECAY=90000;
+    var ACIDS=[
+      {f:"C₆H₅OH",n:"苯酚",p:"9.99",c:"#f6c765",r:19,note:"有机弱酸"},
+      {f:"H₂CO₃",n:"碳酸",p:"6.35*",c:"#83cbbb",r:24,u:true,note:"90 秒后分解"},
+      {f:"CH₃COOH",n:"乙酸",p:"4.76",c:"#f29a72",r:29,note:"常见羧酸"},
+      {f:"HCOOH",n:"甲酸",p:"3.75",c:"#d08bb6",r:35,note:"最简单的羧酸"},
+      {f:"HNO₂",n:"亚硝酸",p:"≈3.3",c:"#84a9d9",r:41,u:true,note:"90 秒后分解"},
+      {f:"HF",n:"氢氟酸",p:"3.17",c:"#8bc765",r:48,note:"弱酸"},
+      {f:"H₃PO₄",n:"磷酸",p:"2.15",c:"#edce62",r:56,note:"第一级电离"},
+      {f:"HNO₃",n:"硝酸",p:"≈−1.4",c:"#ee754f",r:65,note:"强酸"},
+      {f:"HCl",n:"盐酸",p:"≈−6.3",c:"#55a6a2",r:74,note:"强酸"},
+      {f:"HClO₄",n:"高氯酸",p:"≈−10",c:"#be5b70",r:84,note:"终极酸"}
+    ];
+    var canvas=document.getElementById("game"),ctx=canvas.getContext("2d"),last=performance.now(),lastUi=0;
+    var game;
+    function randomType(){var bag=[0,0,0,0,1,1,1,2,2,3];return bag[Math.floor(Math.random()*bag.length)]}
+    function savedBest(){try{return Number(localStorage.getItem("acid-suika-offline-best")||0)||0}catch(e){return 0}}
+    function fresh(started){
+      return {balls:[],fx:[],seed:1,score:0,best:savedBest(),current:randomType(),next:randomType(),aim:W/2,ready:0,started:!!started,paused:false,pauseAt:0,over:false,won:false,highest:0,status:started?"实验开始：投放第一枚酸分子":"点击开始实验"};
+    }
+    game=fresh(false);
+    function addBall(type,x,y,now,vx,vy){
+      var a=ACIDS[type],b={id:game.seed++,type:type,x:x,y:y,vx:vx||0,vy:vy||0,r:a.r,ang:(Math.random()-.5)*.2,spin:(Math.random()-.5)*.8,entered:y-a.r>DANGER,danger:0};
+      if(a.u)b.decay=now+DECAY;game.balls.push(b);game.highest=Math.max(game.highest,type);return b;
+    }
+    function score(points){game.score+=points;if(game.score>game.best){game.best=game.score;try{localStorage.setItem("acid-suika-offline-best",String(game.best))}catch(e){}}}
+    function burst(x,y,color,text){
+      for(var i=0;i<13;i++){var a=i/13*Math.PI*2+Math.random()*.2,s=45+Math.random()*100;game.fx.push({kind:0,x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-25,life:.55+Math.random()*.3,max:.85,r:2+Math.random()*4,c:color})}
+      if(text)game.fx.push({kind:1,x:x,y:y-10,vx:0,vy:-40,life:1,max:1,r:0,c:color,text:text});
+    }
+    function walls(b){
+      if(b.x-b.r<L){b.x=L+b.r;if(b.vx<0)b.vx*=-.24}
+      if(b.x+b.r>R){b.x=R-b.r;if(b.vx>0)b.vx*=-.24}
+      if(b.y+b.r>FLOOR){b.y=FLOOR-b.r;if(b.vy>0)b.vy*=-.16;b.vx*=.92;b.spin*=.78;if(Math.abs(b.vy)<12)b.vy=0}
+    }
+    function pair(a,b){
+      var dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy),min=a.r+b.r;if(d>=min)return;if(d<.001){dx=.01;dy=0;d=.01}
+      var nx=dx/d,ny=dy/d,over=min-d,ma=a.r*a.r,mb=b.r*b.r,total=ma+mb;
+      a.x-=nx*over*(mb/total)*.82;a.y-=ny*over*(mb/total)*.82;b.x+=nx*over*(ma/total)*.82;b.y+=ny*over*(ma/total)*.82;
+      var rx=b.vx-a.vx,ry=b.vy-a.vy,along=rx*nx+ry*ny;if(along<0){var ia=1/ma,ib=1/mb,imp=-(1+.18)*along/(ia+ib);a.vx-=imp*nx*ia;a.vy-=imp*ny*ia;b.vx+=imp*nx*ib;b.vy+=imp*ny*ib}
+    }
+    function merge(now){
+      var used={},adds=[];
+      for(var i=0;i<game.balls.length;i++){var a=game.balls[i];if(used[a.id])continue;
+        for(var j=i+1;j<game.balls.length;j++){var b=game.balls[j];if(used[b.id]||a.type!==b.type)continue;var dx=a.x-b.x,dy=a.y-b.y;if(Math.sqrt(dx*dx+dy*dy)>a.r+b.r+1.5)continue;
+          used[a.id]=used[b.id]=true;var x=(a.x+b.x)/2,y=(a.y+b.y)/2,vx=(a.vx+b.vx)/2,vy=Math.min(-55,(a.vy+b.vy)/2-30);
+          if(a.type===9){score(1500);burst(x,y,ACIDS[9].c,"巅峰反应 +1500");game.status="两枚高氯酸完成巅峰反应！"}
+          else{var t=a.type+1,pts=10*(t+1)*(t+1);adds.push({t:t,x:x,y:y,vx:vx,vy:vy});score(pts);burst(x,y,ACIDS[t].c,"+"+pts);game.status="合成 "+ACIDS[t].n+"！";if(t===9&&!game.won){game.won=true;game.status="成功合成高氯酸！继续挑战更高分"}}
+          break;
+        }
+      }
+      game.balls=game.balls.filter(function(b){return !used[b.id]});adds.forEach(function(a){addBall(a.t,a.x,a.y,now,a.vx,a.vy)});
+    }
+    function update(dt,now){
+      var step=Math.min(dt,1/30)/3;
+      for(var s=0;s<3;s++){
+        game.balls.forEach(function(b){b.vy+=1050*step;b.vx*=Math.pow(.998,step*60);b.x+=b.vx*step;b.y+=b.vy*step;b.ang+=b.spin*step;walls(b)});
+        for(var p=0;p<3;p++){for(var i=0;i<game.balls.length;i++)for(var j=i+1;j<game.balls.length;j++)pair(game.balls[i],game.balls[j]);game.balls.forEach(walls)}
+      }
+      merge(now);
+      var expired=game.balls.filter(function(b){return b.decay&&b.decay<=now});if(expired.length){var gone={};expired.forEach(function(b){gone[b.id]=1;burst(b.x,b.y,ACIDS[b.type].c,"90s · 分解")});game.balls=game.balls.filter(function(b){return !gone[b.id]});game.status=expired.map(function(b){return ACIDS[b.type].n}).join("、")+"已分解"}
+      game.fx.forEach(function(f){f.life-=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;if(!f.kind)f.vy+=180*dt});game.fx=game.fx.filter(function(f){return f.life>0});
+      game.balls.forEach(function(b){if(!b.entered&&b.y-b.r>DANGER+5)b.entered=true;var over=b.entered&&b.y-b.r<DANGER&&Math.abs(b.vy)<95;if(over){if(!b.danger)b.danger=now;if(now-b.danger>2200){game.over=true;game.status="容器已满，实验结束"}}else b.danger=0});
+    }
+    function round(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+    function drawBall(b,now){
+      var a=ACIDS[b.type];ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.ang||0);ctx.beginPath();ctx.arc(0,0,b.r,0,Math.PI*2);ctx.fillStyle="rgba(23,52,59,.16)";ctx.fill();ctx.beginPath();ctx.arc(-2,-3,b.r-1,0,Math.PI*2);ctx.fillStyle=a.c;ctx.fill();ctx.lineWidth=Math.max(1.8,b.r*.045);ctx.strokeStyle="#17343b";ctx.stroke();ctx.beginPath();ctx.arc(-b.r*.28,-b.r*.31,Math.max(2.4,b.r*.105),0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,.48)";ctx.fill();var fs=Math.max(9,Math.min(19,b.r*.36));ctx.fillStyle="#17343b";ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="800 "+fs+"px Times New Roman,serif";ctx.fillText(a.f,-1,b.r>28?-4:0);if(b.r>27){ctx.font="750 "+Math.max(8,Math.min(12,b.r*.19))+"px sans-serif";ctx.fillText(a.n,-1,fs*.74)}ctx.restore();
+      if(a.u&&b.decay){var rem=Math.max(0,Math.ceil((b.decay-now)/1000));ctx.save();ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(b.x,b.y,b.r+4,-Math.PI/2,-Math.PI/2+Math.PI*2*rem/90);ctx.strokeStyle="#e95f35";ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);if(b.r>=24){var label=rem+"s";ctx.font="800 9px monospace";var w=ctx.measureText(label).width+10;round(b.x-w/2,b.y+b.r*.56,w,14,7);ctx.fillStyle="#fffaf0";ctx.fill();ctx.fillStyle="#c84e2d";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(label,b.x,b.y+b.r*.56+7)}ctx.restore()}
+    }
+    function draw(now){
+      ctx.clearRect(0,0,W,H);ctx.save();ctx.globalAlpha=.18;ctx.fillStyle="#0f6155";for(var y=135;y<FLOOR;y+=28)for(var x=24;x<W-18;x+=28){ctx.beginPath();ctx.arc(x,y,1.1,0,Math.PI*2);ctx.fill()}ctx.restore();
+      ctx.save();ctx.strokeStyle="rgba(233,95,53,.82)";ctx.lineWidth=2;ctx.setLineDash([8,7]);ctx.beginPath();ctx.moveTo(L+2,DANGER);ctx.lineTo(R-2,DANGER);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#e95f35";ctx.font="800 9px sans-serif";ctx.textAlign="right";ctx.fillText("容量警戒线 · 超过 2 秒结束",R-7,DANGER-8);ctx.restore();
+      ctx.save();ctx.strokeStyle="#17343b";ctx.lineWidth=5;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(L,WALL_TOP);ctx.lineTo(L,FLOOR-20);ctx.quadraticCurveTo(L,FLOOR,L+20,FLOOR);ctx.lineTo(R-20,FLOOR);ctx.quadraticCurveTo(R,FLOOR,R,FLOOR-20);ctx.lineTo(R,WALL_TOP);ctx.stroke();ctx.restore();
+      if(game.started&&!game.over){var a=ACIDS[game.current],yy=44;ctx.save();ctx.strokeStyle="rgba(23,52,59,.25)";ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(game.aim,yy+a.r+5);ctx.lineTo(game.aim,WALL_TOP-3);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=(performance.now()<game.ready||game.paused) ? .42 : .93;drawBall({type:game.current,x:game.aim,y:yy,r:a.r,ang:0},now);ctx.restore()}
+      game.balls.forEach(function(b){drawBall(b,now)});game.fx.forEach(function(f){ctx.save();ctx.globalAlpha=Math.max(0,f.life/f.max);if(!f.kind){ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fillStyle=f.c;ctx.fill()}else{ctx.fillStyle="#17343b";ctx.font="900 15px sans-serif";ctx.textAlign="center";ctx.fillText(f.text,f.x,f.y)}ctx.restore()});
+    }
+    function sync(){
+      document.getElementById("score").textContent=String(game.score).padStart(4,"0");document.getElementById("best").textContent=String(game.best).padStart(4,"0");document.getElementById("status").textContent=game.status;document.getElementById("restartBtn").textContent=!game.started?"开始实验":game.over?"再来一局":"重新开局";document.getElementById("pauseBtn").textContent=game.paused?"继续":"暂停";
+      var cur=ACIDS[game.current],next=ACIDS[game.next];document.getElementById("currentFormula").textContent=cur.f;document.getElementById("currentDot").style.background=cur.c;document.getElementById("nextFormula").textContent=next.f;document.getElementById("nextName").textContent=next.n;document.getElementById("nextBall").style.background=next.c;document.getElementById("nextTimer").style.display=next.u?"block":"none";
+      document.querySelectorAll("#progress i,#ladder li").forEach(function(el,i){el.classList.toggle("on",i%10<=game.highest)});
+      var ov=document.getElementById("overlay");if(!game.started){showOverlay("完全离线 · 无需安装","从苯酚开始<br>合成到高氯酸","相同酸分子碰撞后，会合成为酸性更强的下一级。","开始实验")}else if(game.over){showOverlay("CONTAINER FULL","实验结束","本轮记录 <b>"+game.score+"</b>，最高合成到 <b>"+ACIDS[game.highest].n+"</b>。","再来一局")}else if(game.paused){showOverlay("PAUSED","实验暂停","90 秒分解倒计时也已冻结。","继续")}else ov.classList.remove("show");
+    }
+    function showOverlay(k,t,p,b){var ov=document.getElementById("overlay");ov.classList.add("show");document.getElementById("overlayKicker").textContent=k;document.getElementById("overlayTitle").innerHTML=t;document.getElementById("overlayText").innerHTML=p;document.getElementById("overlayBtn").textContent=b}
+    function start(){game=fresh(true);sync();canvas.focus()}
+    function drop(){var now=performance.now();if(!game.started||game.paused||game.over||now<game.ready)return;var a=ACIDS[game.current],x=Math.max(L+a.r,Math.min(R-a.r,game.aim));addBall(game.current,x,42,Date.now());game.current=game.next;game.next=randomType();game.ready=now+480;game.status=a.n+"已投放";sync()}
+    function aim(dx){var a=ACIDS[game.current];game.aim=Math.max(L+a.r,Math.min(R-a.r,game.aim+dx))}
+    function pointer(x){var r=canvas.getBoundingClientRect(),a=ACIDS[game.current];game.aim=Math.max(L+a.r,Math.min(R-a.r,(x-r.left)/r.width*W))}
+    function pause(){if(!game.started||game.over)return;var now=Date.now();if(!game.paused){game.paused=true;game.pauseAt=now;game.status="实验已暂停"}else{var d=now-game.pauseAt;game.balls.forEach(function(b){if(b.decay)b.decay+=d;if(b.danger)b.danger+=d});game.paused=false;game.pauseAt=0;game.status="继续实验"}sync()}
+    function loop(t){var dt=Math.min((t-last)/1000,.05);last=t;if(game.started&&!game.paused&&!game.over)update(dt,Date.now());draw(Date.now());if(t-lastUi>150){lastUi=t;sync()}requestAnimationFrame(loop)}
+    var ladder=document.getElementById("ladder"),manual=document.getElementById("manual"),progress=document.getElementById("progress");ACIDS.forEach(function(a,i){progress.insertAdjacentHTML("beforeend","<i></i>");ladder.insertAdjacentHTML("beforeend","<li><i style='background:"+a.c+"'>"+(i+1)+"</i><span><b>"+a.f+"</b><small>"+a.n+"</small></span>"+(a.u?"<em>⏱</em>":"")+"</li>");manual.insertAdjacentHTML("beforeend","<li><i style='background:"+a.c+"'>"+(i+1)+"</i><b>"+a.f+" · "+a.n+"</b><span>pKa "+a.p+"</span><em>"+a.note+"</em></li>")});
+    canvas.addEventListener("pointermove",function(e){pointer(e.clientX)});canvas.addEventListener("pointerdown",function(e){pointer(e.clientX);drop();canvas.focus()});document.getElementById("restartBtn").onclick=start;document.getElementById("overlayBtn").onclick=function(){game.paused?pause():start()};document.getElementById("pauseBtn").onclick=pause;document.getElementById("leftBtn").onclick=function(){aim(-30)};document.getElementById("rightBtn").onclick=function(){aim(30)};document.getElementById("dropBtn").onclick=drop;
+    var help=document.getElementById("help");document.getElementById("helpBtn").onclick=function(){help.showModal()};document.getElementById("closeHelp").onclick=function(){help.close()};
+    window.addEventListener("keydown",function(e){if(help.open)return;var k=e.key.toLowerCase();if(e.key==="ArrowLeft"||k==="a"){e.preventDefault();aim(-18)}else if(e.key==="ArrowRight"||k==="d"){e.preventDefault();aim(18)}else if(e.key===" "||e.key==="ArrowDown"){e.preventDefault();drop()}else if(k==="p")pause()});
+    sync();requestAnimationFrame(loop);
+  })();
+  </script>
+</body>
+</html>
